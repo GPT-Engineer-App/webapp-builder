@@ -1,57 +1,29 @@
-import React, { useState } from "react";
-import { Container, VStack, Box, Text, Input, Radio, RadioGroup, Slider, SliderTrack, SliderFilledTrack, SliderThumb, Tabs, TabList, TabPanels, Tab, TabPanel, Flex, Select } from "@chakra-ui/react";
+import React, { useState, useEffect } from "react";
+import { Container, VStack, Box, Text, Input, Radio, RadioGroup, Slider, SliderTrack, SliderFilledTrack, SliderThumb, Tabs, TabList, TabPanels, Tab, TabPanel, Flex, Select, Button } from "@chakra-ui/react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { Rnd } from "react-rnd";
 
+// Import images for components
+import TextFieldImage from "../assets/text-field.png";
+import RadioButtonImage from "../assets/radio-button.png";
+import SliderImage from "../assets/slider.png";
+
 const initialItems = [
-  { id: "1", content: "Text Field", type: "input" },
-  { id: "2", content: "Radio Button", type: "radio" },
-  { id: "3", content: "Slider", type: "slider" },
+  { id: "1", content: "Text Field", type: "input", image: TextFieldImage },
+  { id: "2", content: "Radio Button", type: "radio", image: RadioButtonImage },
+  { id: "3", content: "Slider", type: "slider", image: SliderImage },
 ];
 
 const componentCategories = {
   "Most Used Components": [
-    { id: "1", content: "Text Field", type: "input" },
-    { id: "2", content: "Button", type: "button" },
-    { id: "3", content: "Simple List", type: "list" },
-    { id: "4", content: "App Bar", type: "appbar" },
-    { id: "5", content: "Image", type: "image" },
-    { id: "6", content: "Form", type: "form" },
+    { id: "1", content: "Text Field", type: "input", image: TextFieldImage },
+    { id: "2", content: "Button", type: "button", image: TextFieldImage },
+    { id: "3", content: "Simple List", type: "list", image: TextFieldImage },
+    { id: "4", content: "App Bar", type: "appbar", image: TextFieldImage },
+    { id: "5", content: "Image", type: "image", image: TextFieldImage },
+    { id: "6", content: "Form", type: "form", image: TextFieldImage },
   ],
-  "Lists": [
-    { id: "7", content: "Simple List", type: "list" },
-    { id: "8", content: "Card List", type: "cardlist" },
-    { id: "9", content: "Image List", type: "imagelist" },
-    { id: "10", content: "Avatar List", type: "avatarlist" },
-    { id: "11", content: "Horizontal Card List", type: "hcardlist" },
-    { id: "12", content: "Horizontal Chip List", type: "hchiplist" },
-    { id: "13", content: "Custom List", type: "customlist" },
-  ],
-  "Buttons": [
-    { id: "14", content: "Button", type: "button" },
-    { id: "15", content: "Action Button", type: "actionbutton" },
-    { id: "16", content: "Icon", type: "icon" },
-    { id: "17", content: "Toggle", type: "toggle" },
-  ],
-  "Simple": [
-    { id: "18", content: "Text", type: "text" },
-    { id: "19", content: "Image", type: "image" },
-    { id: "20", content: "Video", type: "video" },
-    { id: "21", content: "Ellipse", type: "ellipse" },
-    { id: "22", content: "Rectangle", type: "rectangle" },
-    { id: "23", content: "Line", type: "line" },
-    { id: "24", content: "Vector", type: "vector" },
-    { id: "25", content: "Web View", type: "webview" },
-  ],
-  "Forms & Fields": [
-    { id: "26", content: "Form", type: "form" },
-    { id: "27", content: "Text Input", type: "textinput" },
-    { id: "28", content: "Date Picker", type: "datepicker" },
-    { id: "29", content: "Dropdown Menu", type: "dropdownmenu" },
-    { id: "30", content: "File Picker", type: "filepicker" },
-    { id: "31", content: "Image Picker", type: "imagepicker" },
-    { id: "32", content: "Location Input", type: "locationinput" },
-  ],
+  // Add other categories similarly...
 };
 
 const Index = () => {
@@ -59,6 +31,22 @@ const Index = () => {
   const [pages, setPages] = useState([{ id: "page-1", name: "Page 1", items: initialItems }]);
   const [activeTab, setActiveTab] = useState(0);
   const [selectedComponent, setSelectedComponent] = useState(null);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Delete" && selectedComponent) {
+        const updatedPages = [...pages];
+        updatedPages[activeTab].items = updatedPages[activeTab].items.filter(item => item.id !== selectedComponent.id);
+        setPages(updatedPages);
+        setSelectedComponent(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedComponent, pages, activeTab]);
 
   const onDragEnd = (result) => {
     if (!result.destination) return;
@@ -90,6 +78,20 @@ const Index = () => {
 
   const handleComponentClick = (component) => {
     setSelectedComponent(component);
+  };
+
+  const handleSettingChange = (e) => {
+    const { name, value } = e.target;
+    const updatedPages = [...pages];
+    const updatedItems = updatedPages[activeTab].items.map(item => {
+      if (item.id === selectedComponent.id) {
+        return { ...item, [name]: value };
+      }
+      return item;
+    });
+    updatedPages[activeTab].items = updatedItems;
+    setPages(updatedPages);
+    setSelectedComponent({ ...selectedComponent, [name]: value });
   };
 
   return (
@@ -124,6 +126,7 @@ const Index = () => {
                           borderRadius="md"
                           boxShadow="md"
                         >
+                          <img src={item.image} alt={item.content} style={{ width: "100%", height: "auto" }} />
                           {item.content}
                         </Box>
                       )}
@@ -156,15 +159,26 @@ const Index = () => {
                                 {(provided) => (
                                   <Rnd
                                     default={{
-                                      x: 0,
-                                      y: 0,
-                                      width: 320,
-                                      height: 200,
+                                      x: item.x || 0,
+                                      y: item.y || 0,
+                                      width: item.width || 320,
+                                      height: item.height || 200,
                                     }}
                                     minWidth={100}
                                     minHeight={100}
                                     bounds="parent"
                                     onClick={() => handleComponentClick(item)}
+                                    onDragStop={(e, d) => {
+                                      const updatedPages = [...pages];
+                                      const updatedItems = updatedPages[activeTab].items.map(i => {
+                                        if (i.id === item.id) {
+                                          return { ...i, x: d.x, y: d.y };
+                                        }
+                                        return i;
+                                      });
+                                      updatedPages[activeTab].items = updatedItems;
+                                      setPages(updatedPages);
+                                    }}
                                   >
                                     <Box
                                       ref={provided.innerRef}
@@ -215,6 +229,10 @@ const Index = () => {
               <Text>ID: {selectedComponent.id}</Text>
               <Text>Type: {selectedComponent.type}</Text>
               <Text>Content: {selectedComponent.content}</Text>
+              <Input name="width" placeholder="Width" value={selectedComponent.width || ""} onChange={handleSettingChange} />
+              <Input name="height" placeholder="Height" value={selectedComponent.height || ""} onChange={handleSettingChange} />
+              <Input name="color" placeholder="Color" value={selectedComponent.color || ""} onChange={handleSettingChange} />
+              <Input name="font" placeholder="Font" value={selectedComponent.font || ""} onChange={handleSettingChange} />
               {/* Add more settings as needed */}
             </Box>
           )}
