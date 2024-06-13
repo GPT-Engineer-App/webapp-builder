@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Container, VStack, Box, Text, Button } from "@chakra-ui/react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { Rnd } from "react-rnd";
 
 const initialItems = [
   { id: "1", content: "Item 1" },
@@ -32,19 +33,31 @@ const Index = () => {
                 {items.map((item, index) => (
                   <Draggable key={item.id} draggableId={item.id} index={index}>
                     {(provided) => (
-                      <Box
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        p={4}
-                        bg="gray.100"
-                        width="100%"
-                        textAlign="center"
-                        borderRadius="md"
-                        boxShadow="md"
+                      <Rnd
+                        default={{
+                          x: 0,
+                          y: 0,
+                          width: 320,
+                          height: 200,
+                        }}
+                        minWidth={100}
+                        minHeight={100}
+                        bounds="parent"
                       >
-                        {item.content}
-                      </Box>
+                        <Box
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          p={4}
+                          bg="gray.100"
+                          width="100%"
+                          textAlign="center"
+                          borderRadius="md"
+                          boxShadow="md"
+                        >
+                          {item.content}
+                        </Box>
+                      </Rnd>
                     )}
                   </Draggable>
                 ))}
