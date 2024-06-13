@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Container, VStack, Box, Text, Input, Radio, RadioGroup, Slider, SliderTrack, SliderFilledTrack, SliderThumb, Tabs, TabList, TabPanels, Tab, TabPanel, Flex } from "@chakra-ui/react";
+import { Container, VStack, Box, Text, Input, Radio, RadioGroup, Slider, SliderTrack, SliderFilledTrack, SliderThumb, Tabs, TabList, TabPanels, Tab, TabPanel, Flex, Select } from "@chakra-ui/react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { Rnd } from "react-rnd";
 
@@ -9,10 +9,56 @@ const initialItems = [
   { id: "3", content: "Slider", type: "slider" },
 ];
 
+const componentCategories = {
+  "Most Used Components": [
+    { id: "1", content: "Text Field", type: "input" },
+    { id: "2", content: "Button", type: "button" },
+    { id: "3", content: "Simple List", type: "list" },
+    { id: "4", content: "App Bar", type: "appbar" },
+    { id: "5", content: "Image", type: "image" },
+    { id: "6", content: "Form", type: "form" },
+  ],
+  "Lists": [
+    { id: "7", content: "Simple List", type: "list" },
+    { id: "8", content: "Card List", type: "cardlist" },
+    { id: "9", content: "Image List", type: "imagelist" },
+    { id: "10", content: "Avatar List", type: "avatarlist" },
+    { id: "11", content: "Horizontal Card List", type: "hcardlist" },
+    { id: "12", content: "Horizontal Chip List", type: "hchiplist" },
+    { id: "13", content: "Custom List", type: "customlist" },
+  ],
+  "Buttons": [
+    { id: "14", content: "Button", type: "button" },
+    { id: "15", content: "Action Button", type: "actionbutton" },
+    { id: "16", content: "Icon", type: "icon" },
+    { id: "17", content: "Toggle", type: "toggle" },
+  ],
+  "Simple": [
+    { id: "18", content: "Text", type: "text" },
+    { id: "19", content: "Image", type: "image" },
+    { id: "20", content: "Video", type: "video" },
+    { id: "21", content: "Ellipse", type: "ellipse" },
+    { id: "22", content: "Rectangle", type: "rectangle" },
+    { id: "23", content: "Line", type: "line" },
+    { id: "24", content: "Vector", type: "vector" },
+    { id: "25", content: "Web View", type: "webview" },
+  ],
+  "Forms & Fields": [
+    { id: "26", content: "Form", type: "form" },
+    { id: "27", content: "Text Input", type: "textinput" },
+    { id: "28", content: "Date Picker", type: "datepicker" },
+    { id: "29", content: "Dropdown Menu", type: "dropdownmenu" },
+    { id: "30", content: "File Picker", type: "filepicker" },
+    { id: "31", content: "Image Picker", type: "imagepicker" },
+    { id: "32", content: "Location Input", type: "locationinput" },
+  ],
+};
+
 const Index = () => {
   const [items, setItems] = useState(initialItems);
   const [pages, setPages] = useState([{ id: "page-1", name: "Page 1", items: initialItems }]);
   const [activeTab, setActiveTab] = useState(0);
+  const [selectedComponent, setSelectedComponent] = useState(null);
 
   const onDragEnd = (result) => {
     if (!result.destination) return;
@@ -42,11 +88,24 @@ const Index = () => {
     setActiveTab(pages.length);
   };
 
+  const handleComponentClick = (component) => {
+    setSelectedComponent(component);
+  };
+
   return (
-    <Container centerContent maxW="container.md" height="100vh" display="flex" flexDirection="column" justifyContent="center" alignItems="center">
+    <Container centerContent maxW="container.xl" height="100vh" display="flex" flexDirection="column" justifyContent="center" alignItems="center">
       <Flex width="100%" height="100%">
         <Box width="20%" height="100%" overflowY="auto" borderRight="1px" borderColor="gray.200" p={4}>
           <Text fontSize="2xl" mb={4}>Components</Text>
+          <Select placeholder="Select category">
+            {Object.keys(componentCategories).map((category) => (
+              <optgroup label={category} key={category}>
+                {componentCategories[category].map((item) => (
+                  <option key={item.id} value={item.id}>{item.content}</option>
+                ))}
+              </optgroup>
+            ))}
+          </Select>
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="component-list" isDropDisabled={true}>
               {(provided) => (
@@ -76,7 +135,7 @@ const Index = () => {
             </Droppable>
           </DragDropContext>
         </Box>
-        <Box width="80%" height="100%" p={4}>
+        <Box width="60%" height="100%" p={4}>
           <Tabs index={activeTab} onChange={(index) => setActiveTab(index)} variant="enclosed">
             <TabList>
               {pages.map((page, index) => (
@@ -105,6 +164,7 @@ const Index = () => {
                                     minWidth={100}
                                     minHeight={100}
                                     bounds="parent"
+                                    onClick={() => handleComponentClick(item)}
                                   >
                                     <Box
                                       ref={provided.innerRef}
@@ -147,6 +207,17 @@ const Index = () => {
               ))}
             </TabPanels>
           </Tabs>
+        </Box>
+        <Box width="20%" height="100%" overflowY="auto" borderLeft="1px" borderColor="gray.200" p={4}>
+          <Text fontSize="2xl" mb={4}>Component Settings</Text>
+          {selectedComponent && (
+            <Box>
+              <Text>ID: {selectedComponent.id}</Text>
+              <Text>Type: {selectedComponent.type}</Text>
+              <Text>Content: {selectedComponent.content}</Text>
+              {/* Add more settings as needed */}
+            </Box>
+          )}
         </Box>
       </Flex>
     </Container>
