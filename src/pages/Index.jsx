@@ -31,6 +31,7 @@ const Index = () => {
   const [pages, setPages] = useState([{ id: "page-1", name: "Page 1", items: initialItems }]);
   const [activeTab, setActiveTab] = useState(0);
   const [selectedComponent, setSelectedComponent] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -55,7 +56,7 @@ const Index = () => {
     const destinationIndex = result.destination.index;
 
     if (result.source.droppableId === "component-list" && result.destination.droppableId === "canvas") {
-      const newItem = { ...initialItems[sourceIndex], id: `${pages[activeTab].items.length + 1}` };
+      const newItem = { ...componentCategories[selectedCategory][sourceIndex], id: `${pages[activeTab].items.length + 1}` };
       const updatedPages = [...pages];
       updatedPages[activeTab].items = [...updatedPages[activeTab].items, newItem];
       setPages(updatedPages);
@@ -99,11 +100,11 @@ const Index = () => {
       <Flex width="100%" height="100%">
         <Box width="20%" height="100%" overflowY="auto" borderRight="1px" borderColor="gray.200" p={4}>
           <Text fontSize="2xl" mb={4}>Components</Text>
-          <Select placeholder="Select category">
+          <Select placeholder="Select category" onChange={(e) => setSelectedCategory(e.target.value)}>
             {Object.keys(componentCategories).map((category) => (
               <optgroup label={category} key={category}>
                 {componentCategories[category].map((item) => (
-                  <option key={item.id} value={item.id}>{item.content}</option>
+                  <option key={item.id} value={category}>{item.content}</option>
                 ))}
               </optgroup>
             ))}
@@ -112,7 +113,7 @@ const Index = () => {
             <Droppable droppableId="component-list" isDropDisabled={true}>
               {(provided) => (
                 <VStack {...provided.droppableProps} ref={provided.innerRef} spacing={4} width="100%">
-                  {initialItems.map((item, index) => (
+                  {selectedCategory && componentCategories[selectedCategory].map((item, index) => (
                     <Draggable key={item.id} draggableId={item.id} index={index}>
                       {(provided) => (
                         <Box
@@ -173,6 +174,17 @@ const Index = () => {
                                       const updatedItems = updatedPages[activeTab].items.map(i => {
                                         if (i.id === item.id) {
                                           return { ...i, x: d.x, y: d.y };
+                                        }
+                                        return i;
+                                      });
+                                      updatedPages[activeTab].items = updatedItems;
+                                      setPages(updatedPages);
+                                    }}
+                                    onResizeStop={(e, direction, ref, delta, position) => {
+                                      const updatedPages = [...pages];
+                                      const updatedItems = updatedPages[activeTab].items.map(i => {
+                                        if (i.id === item.id) {
+                                          return { ...i, width: ref.style.width, height: ref.style.height, ...position };
                                         }
                                         return i;
                                       });
