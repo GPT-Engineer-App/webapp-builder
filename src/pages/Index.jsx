@@ -1,18 +1,16 @@
 import React, { useState } from "react";
-import { Container, VStack, Box, Text, Button, Slider, SliderTrack, SliderFilledTrack, SliderThumb, Input, List, ListItem, Image, Radio, RadioGroup, Checkbox, Tabs, TabList, TabPanels, Tab, TabPanel, Flex, Heading } from "@chakra-ui/react";
+import { Container, VStack, Box, Text, Input, Radio, RadioGroup, Slider, SliderTrack, SliderFilledTrack, SliderThumb, Tabs, TabList, TabPanels, Tab, TabPanel, Flex } from "@chakra-ui/react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { Rnd } from "react-rnd";
 
 const initialItems = [
-  { id: "1", content: "Item 1" },
-  { id: "2", content: "Item 2" },
-  { id: "3", content: "Item 3" },
+  { id: "1", content: "Text Field", type: "input" },
+  { id: "2", content: "Radio Button", type: "radio" },
+  { id: "3", content: "Slider", type: "slider" },
 ];
 
 const Index = () => {
   const [items, setItems] = useState(initialItems);
-  const [sliderValue, setSliderValue] = useState(50);
-  const [radioValue, setRadioValue] = useState("1");
   const [pages, setPages] = useState([{ id: "page-1", name: "Page 1", items: initialItems }]);
   const [activeTab, setActiveTab] = useState(0);
 
@@ -23,7 +21,7 @@ const Index = () => {
     const destinationIndex = result.destination.index;
 
     if (result.source.droppableId === "component-list" && result.destination.droppableId === "canvas") {
-      const newItem = { id: `${pages[activeTab].items.length + 1}`, content: `Item ${pages[activeTab].items.length + 1}` };
+      const newItem = { ...initialItems[sourceIndex], id: `${pages[activeTab].items.length + 1}` };
       const updatedPages = [...pages];
       updatedPages[activeTab].items = [...updatedPages[activeTab].items, newItem];
       setPages(updatedPages);
@@ -119,7 +117,21 @@ const Index = () => {
                                       borderRadius="md"
                                       boxShadow="md"
                                     >
-                                      {item.content}
+                                      {item.type === "input" && <Input placeholder="Text Field" />}
+                                      {item.type === "radio" && (
+                                        <RadioGroup>
+                                          <Radio value="1">Option 1</Radio>
+                                          <Radio value="2">Option 2</Radio>
+                                        </RadioGroup>
+                                      )}
+                                      {item.type === "slider" && (
+                                        <Slider defaultValue={30}>
+                                          <SliderTrack>
+                                            <SliderFilledTrack />
+                                          </SliderTrack>
+                                          <SliderThumb />
+                                        </Slider>
+                                      )}
                                     </Box>
                                   </Rnd>
                                 )}
