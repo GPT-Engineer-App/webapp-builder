@@ -1,53 +1,44 @@
 
 import React, { useState, useEffect } from "react";
-import { Container, VStack, Box, Text, Input, Radio, RadioGroup, Slider, SliderTrack, SliderFilledTrack, SliderThumb, Tabs, TabList, TabPanels, Tab, TabPanel, Flex, Select, Button } from "@chakra-ui/react";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { Rnd } from "react-rnd";
+import { Container, Flex } from "@chakra-ui/react";
+import { DragDropContext } from "react-beautiful-dnd";
+import ComponentList from "../components/ComponentList";
+import Canvas from "../components/Canvas";
+import PropertiesPanel from "../components/PropertiesPanel";
+import { renderComponent, componentCategories } from "../utils/componentUtils";
 
 // Import images for components
 import TextFieldImage from "../assets/text-field.png";
 import RadioButtonImage from "../assets/radio-button.png";
 import SliderImage from "../assets/slider.png";
 
-// Initialize with more components
-const initialItems = [
-  { id: "1", content: "Text Field", type: "input", image: TextFieldImage },
-  { id: "2", content: "Radio Button", type: "radio", image: RadioButtonImage },
-  { id: "3", content: "Slider", type: "slider", image: SliderImage },
-];
-
-// Component categories with unique IDs
-const componentCategories = {
-  "Most Used Components": [
-    { id: "input-1", content: "Text Field", type: "input", image: TextFieldImage },
-    { id: "button-1", content: "Button", type: "button", image: TextFieldImage },
-    { id: "list-1", content: "Simple List", type: "list", image: TextFieldImage },
-    { id: "appbar-1", content: "App Bar", type: "appbar", image: TextFieldImage },
-    { id: "image-1", content: "Image", type: "image", image: TextFieldImage },
-    { id: "form-1", content: "Form", type: "form", image: TextFieldImage },
-  ],
-  "Input Components": [
-    { id: "input-2", content: "Text Field", type: "input", image: TextFieldImage },
-    { id: "radio-1", content: "Radio Button", type: "radio", image: RadioButtonImage },
-    { id: "slider-1", content: "Slider", type: "slider", image: SliderImage },
-    { id: "checkbox-1", content: "Checkbox", type: "checkbox", image: RadioButtonImage },
-    { id: "select-1", content: "Select", type: "select", image: TextFieldImage },
-  ],
-  "Layout Components": [
-    { id: "container-1", content: "Container", type: "container", image: TextFieldImage },
-    { id: "grid-1", content: "Grid", type: "grid", image: TextFieldImage },
-    { id: "flex-1", content: "Flex", type: "flex", image: TextFieldImage },
-    { id: "stack-1", content: "Stack", type: "stack", image: TextFieldImage },
-  ]
+// Update component categories with images
+const updateComponentImages = () => {
+  const updatedCategories = { ...componentCategories };
+  
+  // Add images to each component
+  Object.keys(updatedCategories).forEach(category => {
+    updatedCategories[category] = updatedCategories[category].map(item => {
+      let image = TextFieldImage;
+      if (item.type === "radio" || item.type === "checkbox") {
+        image = RadioButtonImage;
+      } else if (item.type === "slider") {
+        image = SliderImage;
+      }
+      return { ...item, image };
+    });
+  });
+  
+  return updatedCategories;
 };
 
 const Index = () => {
-  const [items, setItems] = useState(initialItems);
   const [pages, setPages] = useState([{ id: "page-1", name: "Page 1", items: [] }]);
   const [activeTab, setActiveTab] = useState(0);
   const [selectedComponent, setSelectedComponent] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("Most Used Components"); // Default category
   const [nextComponentId, setNextComponentId] = useState(1);
+  const [categoriesWithImages] = useState(updateComponentImages());
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -73,7 +64,7 @@ const Index = () => {
     // When dragging from component list to canvas
     if (result.source.droppableId === "component-list" && result.destination.droppableId === "canvas") {
       // Get the category and the component
-      const categoryItems = componentCategories[selectedCategory];
+      const categoryItems = categoriesWithImages[selectedCategory];
       if (!categoryItems) return;
       
       const sourceIndex = result.source.index;
@@ -147,395 +138,36 @@ const Index = () => {
     setSelectedComponent({ ...selectedComponent, [name]: value });
   };
 
-  // Render the component based on type
-  const renderComponent = (item) => {
-    switch(item.type) {
-      case "input":
-        return <Input placeholder="Text Field" size="md" />;
-      case "radio":
-        return (
-          <RadioGroup>
-            <Radio value="1" mr={2}>Option 1</Radio>
-            <Radio value="2">Option 2</Radio>
-          </RadioGroup>
-        );
-      case "slider":
-        return (
-          <Slider defaultValue={30}>
-            <SliderTrack>
-              <SliderFilledTrack />
-            </SliderTrack>
-            <SliderThumb />
-          </Slider>
-        );
-      case "button":
-        return <Button colorScheme="blue">Button</Button>;
-      case "list":
-        return (
-          <VStack align="stretch" spacing={2}>
-            <Box p={2} bg="gray.100">List Item 1</Box>
-            <Box p={2} bg="gray.100">List Item 2</Box>
-            <Box p={2} bg="gray.100">List Item 3</Box>
-          </VStack>
-        );
-      case "appbar":
-        return (
-          <Flex bg="blue.500" color="white" p={4} justifyContent="space-between" alignItems="center">
-            <Text fontWeight="bold">App Title</Text>
-            <Flex>
-              <Box mx={2}>Menu 1</Box>
-              <Box mx={2}>Menu 2</Box>
-            </Flex>
-          </Flex>
-        );
-      case "image":
-        return (
-          <Box 
-            bg="gray.200" 
-            height="100%" 
-            display="flex" 
-            alignItems="center" 
-            justifyContent="center"
-          >
-            <Text>Image Placeholder</Text>
-          </Box>
-        );
-      case "form":
-        return (
-          <VStack spacing={3} align="stretch">
-            <Input placeholder="Name" />
-            <Input placeholder="Email" />
-            <Button colorScheme="blue">Submit</Button>
-          </VStack>
-        );
-      case "checkbox":
-        return (
-          <VStack align="start">
-            <Box><input type="checkbox" id="check1" /><label htmlFor="check1"> Option 1</label></Box>
-            <Box><input type="checkbox" id="check2" /><label htmlFor="check2"> Option 2</label></Box>
-          </VStack>
-        );
-      case "select":
-        return (
-          <Select placeholder="Select option">
-            <option value="option1">Option 1</option>
-            <option value="option2">Option 2</option>
-            <option value="option3">Option 3</option>
-          </Select>
-        );
-      case "container":
-        return (
-          <Box border="1px dashed" borderColor="gray.300" p={4} textAlign="center">
-            <Text>Container</Text>
-          </Box>
-        );
-      case "grid":
-        return (
-          <Box>
-            <Flex flexWrap="wrap">
-              {[1, 2, 3, 4].map(i => (
-                <Box key={i} width="50%" border="1px solid" borderColor="gray.300" p={2} textAlign="center">
-                  Grid {i}
-                </Box>
-              ))}
-            </Flex>
-          </Box>
-        );
-      case "flex":
-        return (
-          <Flex border="1px dashed" borderColor="gray.300" p={2} justifyContent="space-between">
-            <Box p={1} bg="gray.100">Item 1</Box>
-            <Box p={1} bg="gray.100">Item 2</Box>
-            <Box p={1} bg="gray.100">Item 3</Box>
-          </Flex>
-        );
-      case "stack":
-        return (
-          <VStack spacing={2} align="stretch" border="1px dashed" borderColor="gray.300" p={2}>
-            <Box p={1} bg="gray.100">Item 1</Box>
-            <Box p={1} bg="gray.100">Item 2</Box>
-            <Box p={1} bg="gray.100">Item 3</Box>
-          </VStack>
-        );
-      default:
-        return <Text>Unknown Component: {item.type}</Text>;
-    }
-  };
-
   return (
     <Container centerContent maxW="container.xl" height="100vh" display="flex" flexDirection="column" justifyContent="center" alignItems="center">
-      <Flex width="100%" height="100%">
-        <Box width="20%" height="100%" overflowY="auto" borderRight="1px" borderColor="gray.200" p={4}>
-          <Text fontSize="2xl" mb={4}>Components</Text>
-          <Select 
-            placeholder="Select category" 
-            onChange={(e) => setSelectedCategory(e.target.value)} 
-            mb={4}
-            value={selectedCategory}
-          >
-            {Object.keys(componentCategories).map((category) => (
-              <option key={category} value={category}>{category}</option>
-            ))}
-          </Select>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Flex width="100%" height="100%">
+          <ComponentList 
+            selectedCategory={selectedCategory} 
+            setSelectedCategory={setSelectedCategory} 
+            componentCategories={categoriesWithImages} 
+          />
           
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId="component-list" isDropDisabled={false}>
-              {(provided) => (
-                <VStack 
-                  {...provided.droppableProps} 
-                  ref={provided.innerRef} 
-                  spacing={4} 
-                  width="100%"
-                  align="stretch"
-                  minHeight="300px"
-                >
-                  {selectedCategory && componentCategories[selectedCategory] && 
-                   componentCategories[selectedCategory].map((item, index) => (
-                    <Draggable 
-                      key={item.id} 
-                      draggableId={item.id} 
-                      index={index}
-                    >
-                      {(provided) => (
-                        <Box
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          p={4}
-                          bg="gray.100"
-                          width="100%"
-                          textAlign="center"
-                          borderRadius="md"
-                          boxShadow="md"
-                        >
-                          <img src={item.image} alt={item.content} style={{ width: "100%", height: "auto", marginBottom: "8px" }} />
-                          {item.content}
-                        </Box>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </VStack>
-              )}
-            </Droppable>
-          </DragDropContext>
-        </Box>
-        
-        <Box width="60%" height="100%" p={4}>
-          <Tabs index={activeTab} onChange={(index) => setActiveTab(index)} variant="enclosed">
-            <TabList>
-              {pages.map((page, index) => (
-                <Tab key={page.id}>{page.name}</Tab>
-              ))}
-              <Tab onClick={addNewPage}>+</Tab>
-            </TabList>
-            <TabPanels>
-              {pages.map((page, index) => (
-                <TabPanel key={page.id} p={0}>
-                  <DragDropContext onDragEnd={onDragEnd}>
-                    <Box 
-                      border="1px" 
-                      borderColor="gray.200" 
-                      p={4} 
-                      width="100%" 
-                      height="600px" 
-                      position="relative"
-                      onClick={handleCanvasClick}
-                      overflow="hidden"
-                      bg="white"
-                    >
-                      <Droppable droppableId="canvas" isDropDisabled={false}>
-                        {(provided, snapshot) => (
-                          <Box 
-                            {...provided.droppableProps} 
-                            ref={provided.innerRef} 
-                            width="100%" 
-                            height="100%" 
-                            position="relative"
-                            bg={snapshot.isDraggingOver ? "gray.50" : "white"}
-                          >
-                            {page.items.map((item) => (
-                              <Rnd
-                                key={item.id}
-                                default={{
-                                  x: item.x || 0,
-                                  y: item.y || 0,
-                                  width: item.width || 200,
-                                  height: item.height || 100,
-                                }}
-                                position={{ x: item.x || 0, y: item.y || 0 }}
-                                size={{ width: item.width || 200, height: item.height || 100 }}
-                                style={{
-                                  zIndex: item.zIndex || 1,
-                                  border: selectedComponent && selectedComponent.id === item.id ? '2px solid blue' : '1px solid #ddd',
-                                  borderRadius: '4px',
-                                  background: item.backgroundColor || 'white',
-                                  color: item.color || 'inherit',
-                                  fontFamily: item.fontFamily || 'inherit',
-                                  boxShadow: selectedComponent && selectedComponent.id === item.id ? '0 0 10px rgba(0,0,255,0.3)' : 'none'
-                                }}
-                                minWidth={50}
-                                minHeight={50}
-                                bounds="parent"
-                                onClick={(e) => handleComponentClick(item, e)}
-                                onDragStop={(e, d) => {
-                                  const updatedPages = [...pages];
-                                  const updatedItems = updatedPages[activeTab].items.map(i => {
-                                    if (i.id === item.id) {
-                                      return { ...i, x: d.x, y: d.y };
-                                    }
-                                    return i;
-                                  });
-                                  updatedPages[activeTab].items = updatedItems;
-                                  setPages(updatedPages);
-                                  if (selectedComponent && selectedComponent.id === item.id) {
-                                    setSelectedComponent({ ...selectedComponent, x: d.x, y: d.y });
-                                  }
-                                }}
-                                onResizeStop={(e, direction, ref, delta, position) => {
-                                  const width = ref.offsetWidth;
-                                  const height = ref.offsetHeight;
-                                  
-                                  const updatedPages = [...pages];
-                                  const updatedItems = updatedPages[activeTab].items.map(i => {
-                                    if (i.id === item.id) {
-                                      return { 
-                                        ...i, 
-                                        width, 
-                                        height, 
-                                        x: position.x, 
-                                        y: position.y 
-                                      };
-                                    }
-                                    return i;
-                                  });
-                                  
-                                  updatedPages[activeTab].items = updatedItems;
-                                  setPages(updatedPages);
-                                  
-                                  if (selectedComponent && selectedComponent.id === item.id) {
-                                    setSelectedComponent({ 
-                                      ...selectedComponent, 
-                                      width, 
-                                      height, 
-                                      x: position.x, 
-                                      y: position.y 
-                                    });
-                                  }
-                                }}
-                              >
-                                <Box 
-                                  p={2} 
-                                  height="100%" 
-                                  width="100%"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  {renderComponent(item)}
-                                </Box>
-                              </Rnd>
-                            ))}
-                            {provided.placeholder}
-                          </Box>
-                        )}
-                      </Droppable>
-                    </Box>
-                  </DragDropContext>
-                </TabPanel>
-              ))}
-            </TabPanels>
-          </Tabs>
-        </Box>
-        
-        <Box width="20%" height="100%" overflowY="auto" borderLeft="1px" borderColor="gray.200" p={4}>
-          <Text fontSize="2xl" mb={4}>Component Settings</Text>
-          {selectedComponent && (
-            <Box>
-              <Text mb={2}>ID: {selectedComponent.id}</Text>
-              <Text mb={2}>Type: {selectedComponent.type}</Text>
-              <Text mb={2}>Content: {selectedComponent.content}</Text>
-              
-              <Text fontWeight="bold" mt={4} mb={2}>Position</Text>
-              <Flex mb={2}>
-                <Box mr={2} width="50%">
-                  <Text size="sm">X Position</Text>
-                  <Input 
-                    name="x" 
-                    type="number" 
-                    value={selectedComponent.x || 0} 
-                    onChange={handleSettingChange}
-                    size="sm"
-                  />
-                </Box>
-                <Box width="50%">
-                  <Text size="sm">Y Position</Text>
-                  <Input 
-                    name="y" 
-                    type="number" 
-                    value={selectedComponent.y || 0} 
-                    onChange={handleSettingChange}
-                    size="sm"
-                  />
-                </Box>
-              </Flex>
-              
-              <Text fontWeight="bold" mt={4} mb={2}>Size</Text>
-              <Flex mb={2}>
-                <Box mr={2} width="50%">
-                  <Text size="sm">Width</Text>
-                  <Input 
-                    name="width" 
-                    type="number" 
-                    value={selectedComponent.width || 200} 
-                    onChange={handleSettingChange}
-                    size="sm"
-                  />
-                </Box>
-                <Box width="50%">
-                  <Text size="sm">Height</Text>
-                  <Input 
-                    name="height" 
-                    type="number" 
-                    value={selectedComponent.height || 100} 
-                    onChange={handleSettingChange}
-                    size="sm"
-                  />
-                </Box>
-              </Flex>
-              
-              <Text fontWeight="bold" mt={4} mb={2}>Styling</Text>
-              <Text size="sm">Background Color</Text>
-              <Input 
-                name="backgroundColor" 
-                placeholder="e.g. #ffffff or blue" 
-                value={selectedComponent.backgroundColor || ""} 
-                onChange={handleSettingChange}
-                mb={2}
-                size="sm"
-              />
-              
-              <Text size="sm">Text Color</Text>
-              <Input 
-                name="color" 
-                placeholder="e.g. #000000 or black" 
-                value={selectedComponent.color || ""} 
-                onChange={handleSettingChange}
-                mb={2}
-                size="sm"
-              />
-              
-              <Text size="sm">Font Family</Text>
-              <Input 
-                name="fontFamily" 
-                placeholder="e.g. Arial, sans-serif" 
-                value={selectedComponent.fontFamily || ""} 
-                onChange={handleSettingChange}
-                mb={2}
-                size="sm"
-              />
-            </Box>
-          )}
-        </Box>
-      </Flex>
+          <Canvas 
+            pages={pages}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            addNewPage={addNewPage}
+            onDragEnd={onDragEnd}
+            handleCanvasClick={handleCanvasClick}
+            selectedComponent={selectedComponent}
+            handleComponentClick={handleComponentClick}
+            setPages={setPages}
+            setSelectedComponent={setSelectedComponent}
+            renderComponent={renderComponent}
+          />
+          
+          <PropertiesPanel 
+            selectedComponent={selectedComponent}
+            handleSettingChange={handleSettingChange}
+          />
+        </Flex>
+      </DragDropContext>
     </Container>
   );
 };
