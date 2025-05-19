@@ -9,22 +9,36 @@ import TextFieldImage from "../assets/text-field.png";
 import RadioButtonImage from "../assets/radio-button.png";
 import SliderImage from "../assets/slider.png";
 
+// Initialize with more components
 const initialItems = [
   { id: "1", content: "Text Field", type: "input", image: TextFieldImage },
   { id: "2", content: "Radio Button", type: "radio", image: RadioButtonImage },
   { id: "3", content: "Slider", type: "slider", image: SliderImage },
 ];
 
+// Component categories with unique IDs
 const componentCategories = {
   "Most Used Components": [
-    { id: "1", content: "Text Field", type: "input", image: TextFieldImage },
-    { id: "2", content: "Button", type: "button", image: TextFieldImage },
-    { id: "3", content: "Simple List", type: "list", image: TextFieldImage },
-    { id: "4", content: "App Bar", type: "appbar", image: TextFieldImage },
-    { id: "5", content: "Image", type: "image", image: TextFieldImage },
-    { id: "6", content: "Form", type: "form", image: TextFieldImage },
+    { id: "input-1", content: "Text Field", type: "input", image: TextFieldImage },
+    { id: "button-1", content: "Button", type: "button", image: TextFieldImage },
+    { id: "list-1", content: "Simple List", type: "list", image: TextFieldImage },
+    { id: "appbar-1", content: "App Bar", type: "appbar", image: TextFieldImage },
+    { id: "image-1", content: "Image", type: "image", image: TextFieldImage },
+    { id: "form-1", content: "Form", type: "form", image: TextFieldImage },
   ],
-  // Add other categories similarly...
+  "Input Components": [
+    { id: "input-2", content: "Text Field", type: "input", image: TextFieldImage },
+    { id: "radio-1", content: "Radio Button", type: "radio", image: RadioButtonImage },
+    { id: "slider-1", content: "Slider", type: "slider", image: SliderImage },
+    { id: "checkbox-1", content: "Checkbox", type: "checkbox", image: RadioButtonImage },
+    { id: "select-1", content: "Select", type: "select", image: TextFieldImage },
+  ],
+  "Layout Components": [
+    { id: "container-1", content: "Container", type: "container", image: TextFieldImage },
+    { id: "grid-1", content: "Grid", type: "grid", image: TextFieldImage },
+    { id: "flex-1", content: "Flex", type: "flex", image: TextFieldImage },
+    { id: "stack-1", content: "Stack", type: "stack", image: TextFieldImage },
+  ]
 };
 
 const Index = () => {
@@ -32,7 +46,7 @@ const Index = () => {
   const [pages, setPages] = useState([{ id: "page-1", name: "Page 1", items: [] }]);
   const [activeTab, setActiveTab] = useState(0);
   const [selectedComponent, setSelectedComponent] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("Most Used Components"); // Default category
   const [nextComponentId, setNextComponentId] = useState(1);
 
   useEffect(() => {
@@ -52,23 +66,30 @@ const Index = () => {
   }, [selectedComponent, pages, activeTab]);
 
   const onDragEnd = (result) => {
+    console.log("Drag end result:", result);
+    
     if (!result.destination) return;
 
-    const sourceIndex = result.source.index;
-    
     // When dragging from component list to canvas
     if (result.source.droppableId === "component-list" && result.destination.droppableId === "canvas") {
+      // Get the category and the component
+      const categoryItems = componentCategories[selectedCategory];
+      if (!categoryItems) return;
+      
+      const sourceIndex = result.source.index;
+      if (sourceIndex >= categoryItems.length) return;
+      
       // Generate a unique ID for the new component
       const newId = `component-${nextComponentId}`;
       setNextComponentId(prevId => prevId + 1);
       
       // Create new component with default position
-      const component = componentCategories[selectedCategory][sourceIndex];
+      const component = categoryItems[sourceIndex];
       const newComponent = { 
         ...component, 
         id: newId,
-        x: 20,  // Default starting position
-        y: 20,
+        x: result.destination.x || 20,  // Default starting position
+        y: result.destination.y || 20,
         width: 200,
         height: 100,
         zIndex: pages[activeTab].items.length + 1 // Ensure new components appear on top
@@ -77,6 +98,8 @@ const Index = () => {
       const updatedPages = [...pages];
       updatedPages[activeTab].items = [...updatedPages[activeTab].items, newComponent];
       setPages(updatedPages);
+      
+      console.log("Added component:", newComponent);
     }
   };
 
@@ -124,22 +147,155 @@ const Index = () => {
     setSelectedComponent({ ...selectedComponent, [name]: value });
   };
 
+  // Render the component based on type
+  const renderComponent = (item) => {
+    switch(item.type) {
+      case "input":
+        return <Input placeholder="Text Field" size="md" />;
+      case "radio":
+        return (
+          <RadioGroup>
+            <Radio value="1" mr={2}>Option 1</Radio>
+            <Radio value="2">Option 2</Radio>
+          </RadioGroup>
+        );
+      case "slider":
+        return (
+          <Slider defaultValue={30}>
+            <SliderTrack>
+              <SliderFilledTrack />
+            </SliderTrack>
+            <SliderThumb />
+          </Slider>
+        );
+      case "button":
+        return <Button colorScheme="blue">Button</Button>;
+      case "list":
+        return (
+          <VStack align="stretch" spacing={2}>
+            <Box p={2} bg="gray.100">List Item 1</Box>
+            <Box p={2} bg="gray.100">List Item 2</Box>
+            <Box p={2} bg="gray.100">List Item 3</Box>
+          </VStack>
+        );
+      case "appbar":
+        return (
+          <Flex bg="blue.500" color="white" p={4} justifyContent="space-between" alignItems="center">
+            <Text fontWeight="bold">App Title</Text>
+            <Flex>
+              <Box mx={2}>Menu 1</Box>
+              <Box mx={2}>Menu 2</Box>
+            </Flex>
+          </Flex>
+        );
+      case "image":
+        return (
+          <Box 
+            bg="gray.200" 
+            height="100%" 
+            display="flex" 
+            alignItems="center" 
+            justifyContent="center"
+          >
+            <Text>Image Placeholder</Text>
+          </Box>
+        );
+      case "form":
+        return (
+          <VStack spacing={3} align="stretch">
+            <Input placeholder="Name" />
+            <Input placeholder="Email" />
+            <Button colorScheme="blue">Submit</Button>
+          </VStack>
+        );
+      case "checkbox":
+        return (
+          <VStack align="start">
+            <Box><input type="checkbox" id="check1" /><label htmlFor="check1"> Option 1</label></Box>
+            <Box><input type="checkbox" id="check2" /><label htmlFor="check2"> Option 2</label></Box>
+          </VStack>
+        );
+      case "select":
+        return (
+          <Select placeholder="Select option">
+            <option value="option1">Option 1</option>
+            <option value="option2">Option 2</option>
+            <option value="option3">Option 3</option>
+          </Select>
+        );
+      case "container":
+        return (
+          <Box border="1px dashed" borderColor="gray.300" p={4} textAlign="center">
+            <Text>Container</Text>
+          </Box>
+        );
+      case "grid":
+        return (
+          <Box>
+            <Flex flexWrap="wrap">
+              {[1, 2, 3, 4].map(i => (
+                <Box key={i} width="50%" border="1px solid" borderColor="gray.300" p={2} textAlign="center">
+                  Grid {i}
+                </Box>
+              ))}
+            </Flex>
+          </Box>
+        );
+      case "flex":
+        return (
+          <Flex border="1px dashed" borderColor="gray.300" p={2} justifyContent="space-between">
+            <Box p={1} bg="gray.100">Item 1</Box>
+            <Box p={1} bg="gray.100">Item 2</Box>
+            <Box p={1} bg="gray.100">Item 3</Box>
+          </Flex>
+        );
+      case "stack":
+        return (
+          <VStack spacing={2} align="stretch" border="1px dashed" borderColor="gray.300" p={2}>
+            <Box p={1} bg="gray.100">Item 1</Box>
+            <Box p={1} bg="gray.100">Item 2</Box>
+            <Box p={1} bg="gray.100">Item 3</Box>
+          </VStack>
+        );
+      default:
+        return <Text>Unknown Component: {item.type}</Text>;
+    }
+  };
+
   return (
     <Container centerContent maxW="container.xl" height="100vh" display="flex" flexDirection="column" justifyContent="center" alignItems="center">
       <Flex width="100%" height="100%">
         <Box width="20%" height="100%" overflowY="auto" borderRight="1px" borderColor="gray.200" p={4}>
           <Text fontSize="2xl" mb={4}>Components</Text>
-          <Select placeholder="Select category" onChange={(e) => setSelectedCategory(e.target.value)} mb={4}>
+          <Select 
+            placeholder="Select category" 
+            onChange={(e) => setSelectedCategory(e.target.value)} 
+            mb={4}
+            value={selectedCategory}
+          >
             {Object.keys(componentCategories).map((category) => (
               <option key={category} value={category}>{category}</option>
             ))}
           </Select>
+          
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="component-list" isDropDisabled={false}>
               {(provided) => (
-                <VStack {...provided.droppableProps} ref={provided.innerRef} spacing={4} width="100%">
-                  {selectedCategory && componentCategories[selectedCategory].map((item, index) => (
-                    <Draggable key={item.id} draggableId={`template-${item.id}`} index={index}>
+                <VStack 
+                  {...provided.droppableProps} 
+                  ref={provided.innerRef} 
+                  spacing={4} 
+                  width="100%"
+                  align="stretch"
+                  minHeight="300px"
+                >
+                  {selectedCategory && componentCategories[selectedCategory] && 
+                   componentCategories[selectedCategory].map((item, index) => (
+                    <Draggable 
+                      key={item.id} 
+                      draggableId={item.id} 
+                      index={index}
+                    >
                       {(provided) => (
                         <Box
                           ref={provided.innerRef}
@@ -152,7 +308,7 @@ const Index = () => {
                           borderRadius="md"
                           boxShadow="md"
                         >
-                          <img src={item.image} alt={item.content} style={{ width: "100%", height: "auto" }} />
+                          <img src={item.image} alt={item.content} style={{ width: "100%", height: "auto", marginBottom: "8px" }} />
                           {item.content}
                         </Box>
                       )}
@@ -164,6 +320,7 @@ const Index = () => {
             </Droppable>
           </DragDropContext>
         </Box>
+        
         <Box width="60%" height="100%" p={4}>
           <Tabs index={activeTab} onChange={(index) => setActiveTab(index)} variant="enclosed">
             <TabList>
@@ -175,26 +332,27 @@ const Index = () => {
             <TabPanels>
               {pages.map((page, index) => (
                 <TabPanel key={page.id} p={0}>
-                  <Box 
-                    border="1px" 
-                    borderColor="gray.200" 
-                    p={4} 
-                    width="100%" 
-                    height="600px" 
-                    position="relative"
-                    onClick={handleCanvasClick}
-                    overflow="hidden"
-                    bg="white"
-                  >
-                    <DragDropContext onDragEnd={onDragEnd}>
-                      <Droppable droppableId="canvas">
-                        {(provided) => (
+                  <DragDropContext onDragEnd={onDragEnd}>
+                    <Box 
+                      border="1px" 
+                      borderColor="gray.200" 
+                      p={4} 
+                      width="100%" 
+                      height="600px" 
+                      position="relative"
+                      onClick={handleCanvasClick}
+                      overflow="hidden"
+                      bg="white"
+                    >
+                      <Droppable droppableId="canvas" isDropDisabled={false}>
+                        {(provided, snapshot) => (
                           <Box 
                             {...provided.droppableProps} 
                             ref={provided.innerRef} 
                             width="100%" 
                             height="100%" 
                             position="relative"
+                            bg={snapshot.isDraggingOver ? "gray.50" : "white"}
                           >
                             {page.items.map((item) => (
                               <Rnd
@@ -211,7 +369,9 @@ const Index = () => {
                                   zIndex: item.zIndex || 1,
                                   border: selectedComponent && selectedComponent.id === item.id ? '2px solid blue' : '1px solid #ddd',
                                   borderRadius: '4px',
-                                  background: 'white',
+                                  background: item.backgroundColor || 'white',
+                                  color: item.color || 'inherit',
+                                  fontFamily: item.fontFamily || 'inherit',
                                   boxShadow: selectedComponent && selectedComponent.id === item.id ? '0 0 10px rgba(0,0,255,0.3)' : 'none'
                                 }}
                                 minWidth={50}
@@ -228,7 +388,6 @@ const Index = () => {
                                   });
                                   updatedPages[activeTab].items = updatedItems;
                                   setPages(updatedPages);
-                                  // Update selected component if it's the one being moved
                                   if (selectedComponent && selectedComponent.id === item.id) {
                                     setSelectedComponent({ ...selectedComponent, x: d.x, y: d.y });
                                   }
@@ -254,7 +413,6 @@ const Index = () => {
                                   updatedPages[activeTab].items = updatedItems;
                                   setPages(updatedPages);
                                   
-                                  // Update selected component if it's the one being resized
                                   if (selectedComponent && selectedComponent.id === item.id) {
                                     setSelectedComponent({ 
                                       ...selectedComponent, 
@@ -272,58 +430,7 @@ const Index = () => {
                                   width="100%"
                                   onClick={(e) => e.stopPropagation()}
                                 >
-                                  {item.type === "input" && <Input placeholder="Text Field" size="md" />}
-                                  {item.type === "radio" && (
-                                    <RadioGroup>
-                                      <Radio value="1" mr={2}>Option 1</Radio>
-                                      <Radio value="2">Option 2</Radio>
-                                    </RadioGroup>
-                                  )}
-                                  {item.type === "slider" && (
-                                    <Slider defaultValue={30}>
-                                      <SliderTrack>
-                                        <SliderFilledTrack />
-                                      </SliderTrack>
-                                      <SliderThumb />
-                                    </Slider>
-                                  )}
-                                  {item.type === "button" && (
-                                    <Button>Button</Button>
-                                  )}
-                                  {item.type === "list" && (
-                                    <VStack align="stretch" spacing={2}>
-                                      <Box p={2} bg="gray.100">List Item 1</Box>
-                                      <Box p={2} bg="gray.100">List Item 2</Box>
-                                      <Box p={2} bg="gray.100">List Item 3</Box>
-                                    </VStack>
-                                  )}
-                                  {item.type === "appbar" && (
-                                    <Flex bg="blue.500" color="white" p={4} justifyContent="space-between" alignItems="center">
-                                      <Text fontWeight="bold">App Title</Text>
-                                      <Flex>
-                                        <Box mx={2}>Menu 1</Box>
-                                        <Box mx={2}>Menu 2</Box>
-                                      </Flex>
-                                    </Flex>
-                                  )}
-                                  {item.type === "image" && (
-                                    <Box 
-                                      bg="gray.200" 
-                                      height="100%" 
-                                      display="flex" 
-                                      alignItems="center" 
-                                      justifyContent="center"
-                                    >
-                                      <Text>Image Placeholder</Text>
-                                    </Box>
-                                  )}
-                                  {item.type === "form" && (
-                                    <VStack spacing={3} align="stretch">
-                                      <Input placeholder="Name" />
-                                      <Input placeholder="Email" />
-                                      <Button colorScheme="blue">Submit</Button>
-                                    </VStack>
-                                  )}
+                                  {renderComponent(item)}
                                 </Box>
                               </Rnd>
                             ))}
@@ -331,13 +438,14 @@ const Index = () => {
                           </Box>
                         )}
                       </Droppable>
-                    </DragDropContext>
-                  </Box>
+                    </Box>
+                  </DragDropContext>
                 </TabPanel>
               ))}
             </TabPanels>
           </Tabs>
         </Box>
+        
         <Box width="20%" height="100%" overflowY="auto" borderLeft="1px" borderColor="gray.200" p={4}>
           <Text fontSize="2xl" mb={4}>Component Settings</Text>
           {selectedComponent && (
