@@ -1,3 +1,4 @@
+
 const main = () => {
   /**
    * Listen to URL changes and report them to the parent window
@@ -22,4 +23,9 @@ const main = () => {
   window.addEventListener("load", observeUrlChange);
 };
 
-main().catch(console.error);
+// Execute main function with proper error handling
+try {
+  main();
+} catch (error) {
+  console.error("Error in report-url-change.js:", error);
+}
